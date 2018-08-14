@@ -1,0 +1,4 @@
+version: '3.2'
+services:
+  simple-go-prepaid-card:
+    build: ../

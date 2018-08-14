@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = "api";
+package prepaidcard;
+
+service PrepaidCard {
+    rpc topUp (Amount) returns (Balance);
+}
+
+message Amount {
+    float amount = 1;
+    string currency = 2;
+}
+
+message Balance {
+    float amount = 1;
+    string currency = 2;
+}
