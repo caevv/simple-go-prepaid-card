@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
-	"github.com/caevv/simple-go-mortgage-investing/service"
-	"github.com/caevv/simple-go-mortgage-investing/env"
+	"github.com/caevv/simple-go-prepaid-card/service"
+	"github.com/caevv/simple-go-prepaid-card/env"
 )
 
 func main() {

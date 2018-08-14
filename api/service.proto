@@ -3,15 +3,18 @@ option go_package = "api";
 package prepaidcard;
 
 service PrepaidCard {
-    rpc topUp (Amount) returns (Balance);
+    rpc topUp (TopUpRequest) returns (Balance);
+}
+
+message TopUpRequest {
+    string cardID = 1;
+    Amount amount = 2;
 }
 
 message Amount {
-    float amount = 1;
-    string currency = 2;
+    float value = 1;
 }
 
 message Balance {
     float amount = 1;
-    string currency = 2;
 }

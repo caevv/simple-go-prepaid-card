@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   simple-go-prepaid-card:
-    image: caevv/simple-go-mortgage-investing
+#    image: caevv/simple-go-prepaid-card
     environment:
       APP_LOG_LEVEL: "DEBUG"
     ports:

@@ -8,6 +8,7 @@ It is generated from these files:
 	service.proto
 
 It has these top-level messages:
+	TopUpRequest
 	Amount
 	Balance
 */
@@ -33,39 +34,54 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+type TopUpRequest struct {
+	CardID string  `protobuf:"bytes,1,opt,name=cardID" json:"cardID,omitempty"`
+	Amount *Amount `protobuf:"bytes,2,opt,name=amount" json:"amount,omitempty"`
+}
+
+func (m *TopUpRequest) Reset()                    { *m = TopUpRequest{} }
+func (m *TopUpRequest) String() string            { return proto.CompactTextString(m) }
+func (*TopUpRequest) ProtoMessage()               {}
+func (*TopUpRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+func (m *TopUpRequest) GetCardID() string {
+	if m != nil {
+		return m.CardID
+	}
+	return ""
+}
+
+func (m *TopUpRequest) GetAmount() *Amount {
+	if m != nil {
+		return m.Amount
+	}
+	return nil
+}
+
 type Amount struct {
-	Amount   float32 `protobuf:"fixed32,1,opt,name=amount" json:"amount,omitempty"`
-	Currency string  `protobuf:"bytes,2,opt,name=currency" json:"currency,omitempty"`
+	Value float32 `protobuf:"fixed32,1,opt,name=value" json:"value,omitempty"`
 }
 
 func (m *Amount) Reset()                    { *m = Amount{} }
 func (m *Amount) String() string            { return proto.CompactTextString(m) }
 func (*Amount) ProtoMessage()               {}
-func (*Amount) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (*Amount) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
-func (m *Amount) GetAmount() float32 {
+func (m *Amount) GetValue() float32 {
 	if m != nil {
-		return m.Amount
+		return m.Value
 	}
 	return 0
 }
 
-func (m *Amount) GetCurrency() string {
-	if m != nil {
-		return m.Currency
-	}
-	return ""
-}
-
 type Balance struct {
-	Amount   float32 `protobuf:"fixed32,1,opt,name=amount" json:"amount,omitempty"`
-	Currency string  `protobuf:"bytes,2,opt,name=currency" json:"currency,omitempty"`
+	Amount float32 `protobuf:"fixed32,1,opt,name=amount" json:"amount,omitempty"`
 }
 
 func (m *Balance) Reset()                    { *m = Balance{} }
 func (m *Balance) String() string            { return proto.CompactTextString(m) }
 func (*Balance) ProtoMessage()               {}
-func (*Balance) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*Balance) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
 func (m *Balance) GetAmount() float32 {
 	if m != nil {
@@ -74,14 +90,8 @@ func (m *Balance) GetAmount() float32 {
 	return 0
 }
 
-func (m *Balance) GetCurrency() string {
-	if m != nil {
-		return m.Currency
-	}
-	return ""
-}
-
 func init() {
+	proto.RegisterType((*TopUpRequest)(nil), "prepaidcard.TopUpRequest")
 	proto.RegisterType((*Amount)(nil), "prepaidcard.Amount")
 	proto.RegisterType((*Balance)(nil), "prepaidcard.Balance")
 }
@@ -97,7 +107,7 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for PrepaidCard service
 
 type PrepaidCardClient interface {
-	TopUp(ctx context.Context, in *Amount, opts ...grpc.CallOption) (*Balance, error)
+	TopUp(ctx context.Context, in *TopUpRequest, opts ...grpc.CallOption) (*Balance, error)
 }
 
 type prepaidCardClient struct {
@@ -108,7 +118,7 @@ func NewPrepaidCardClient(cc *grpc.ClientConn) PrepaidCardClient {
 	return &prepaidCardClient{cc}
 }
 
-func (c *prepaidCardClient) TopUp(ctx context.Context, in *Amount, opts ...grpc.CallOption) (*Balance, error) {
+func (c *prepaidCardClient) TopUp(ctx context.Context, in *TopUpRequest, opts ...grpc.CallOption) (*Balance, error) {
 	out := new(Balance)
 	err := grpc.Invoke(ctx, "/prepaidcard.PrepaidCard/topUp", in, out, c.cc, opts...)
 	if err != nil {
@@ -120,7 +130,7 @@ func (c *prepaidCardClient) TopUp(ctx context.Context, in *Amount, opts ...grpc.
 // Server API for PrepaidCard service
 
 type PrepaidCardServer interface {
-	TopUp(context.Context, *Amount) (*Balance, error)
+	TopUp(context.Context, *TopUpRequest) (*Balance, error)
 }
 
 func RegisterPrepaidCardServer(s *grpc.Server, srv PrepaidCardServer) {
@@ -128,7 +138,7 @@ func RegisterPrepaidCardServer(s *grpc.Server, srv PrepaidCardServer) {
 }
 
 func _PrepaidCard_TopUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Amount)
+	in := new(TopUpRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -140,7 +150,7 @@ func _PrepaidCard_TopUp_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/prepaidcard.PrepaidCard/TopUp",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PrepaidCardServer).TopUp(ctx, req.(*Amount))
+		return srv.(PrepaidCardServer).TopUp(ctx, req.(*TopUpRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -161,15 +171,18 @@ var _PrepaidCard_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("service.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 159 bytes of a gzipped FileDescriptorProto
+	// 196 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2d, 0x4e, 0x2d, 0x2a,
 	0xcb, 0x4c, 0x4e, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x2e, 0x28, 0x4a, 0x2d, 0x48,
-	0xcc, 0x4c, 0x49, 0x4e, 0x2c, 0x4a, 0x51, 0xb2, 0xe1, 0x62, 0x73, 0xcc, 0xcd, 0x2f, 0xcd, 0x2b,
-	0x11, 0x12, 0xe3, 0x62, 0x4b, 0x04, 0xb3, 0x24, 0x18, 0x15, 0x18, 0x35, 0x98, 0x82, 0xa0, 0x3c,
-	0x21, 0x29, 0x2e, 0x8e, 0xe4, 0xd2, 0xa2, 0xa2, 0xd4, 0xbc, 0xe4, 0x4a, 0x09, 0x26, 0x05, 0x46,
-	0x0d, 0xce, 0x20, 0x38, 0x5f, 0xc9, 0x96, 0x8b, 0xdd, 0x29, 0x31, 0x27, 0x31, 0x2f, 0x39, 0x95,
-	0x1c, 0xed, 0x46, 0x8e, 0x5c, 0xdc, 0x01, 0x10, 0xb7, 0x38, 0x27, 0x16, 0xa5, 0x08, 0x19, 0x71,
-	0xb1, 0x96, 0xe4, 0x17, 0x84, 0x16, 0x08, 0x09, 0xeb, 0x21, 0x39, 0x51, 0x0f, 0xe2, 0x3e, 0x29,
-	0x11, 0x14, 0x41, 0xa8, 0xb5, 0x4e, 0xac, 0x51, 0xcc, 0x89, 0x05, 0x99, 0x49, 0x6c, 0x60, 0xaf,
-	0x19, 0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0x62, 0x91, 0xe5, 0x26, 0xeb, 0x00, 0x00, 0x00,
+	0xcc, 0x4c, 0x49, 0x4e, 0x2c, 0x4a, 0x51, 0x0a, 0xe6, 0xe2, 0x09, 0xc9, 0x2f, 0x08, 0x2d, 0x08,
+	0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x11, 0x12, 0xe3, 0x62, 0x03, 0x89, 0x7b, 0xba, 0x48, 0x30,
+	0x2a, 0x30, 0x6a, 0x70, 0x06, 0x41, 0x79, 0x42, 0xda, 0x5c, 0x6c, 0x89, 0xb9, 0xf9, 0xa5, 0x79,
+	0x25, 0x12, 0x4c, 0x0a, 0x8c, 0x1a, 0xdc, 0x46, 0xc2, 0x7a, 0x48, 0xa6, 0xe8, 0x39, 0x82, 0xa5,
+	0x82, 0xa0, 0x4a, 0x94, 0xe4, 0xb8, 0xd8, 0x20, 0x22, 0x42, 0x22, 0x5c, 0xac, 0x65, 0x89, 0x39,
+	0xa5, 0xa9, 0x60, 0xd3, 0x98, 0x82, 0x20, 0x1c, 0x25, 0x45, 0x2e, 0x76, 0xa7, 0xc4, 0x9c, 0xc4,
+	0xbc, 0xe4, 0x54, 0x90, 0x7d, 0x50, 0x73, 0x21, 0x2a, 0xa0, 0x3c, 0x23, 0x77, 0x2e, 0xee, 0x00,
+	0x88, 0x05, 0xce, 0x89, 0x45, 0x29, 0x42, 0x16, 0x5c, 0xac, 0x25, 0x20, 0x67, 0x0a, 0x49, 0xa2,
+	0xd8, 0x8b, 0xec, 0x74, 0x29, 0x11, 0x14, 0x29, 0xa8, 0x05, 0x4e, 0xac, 0x51, 0xcc, 0x89, 0x05,
+	0x99, 0x49, 0x6c, 0x60, 0xbf, 0x1b, 0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0x51, 0xde, 0x28, 0xb6,
+	0x0c, 0x01, 0x00, 0x00,
 }
