@@ -69,7 +69,7 @@ func iTopupForAnAmountOf(amount string) error {
 
 	newBalance, err = svc.TopUp(
 		context.Background(),
-		&api.TopUpRequest{CardID: card.ID, Amount: &api.Amount{float32(value)}},
+		&api.TopUpRequest{CardID: card.ID, Amount: &api.Amount{Value: float32(value)}},
 	)
 	if err != nil {
 		return err

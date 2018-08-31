@@ -69,7 +69,7 @@ func applySchemaMigration() error {
 		return err
 	}
 
-	defer m.Close()
+	defer m.Close() // nolint
 
 	if err := m.Up(); err != nil {
 		if err != migrate.ErrNoChange {
