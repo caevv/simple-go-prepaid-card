@@ -1,19 +1,15 @@
 package main
 
 import (
-	"log"
-	"github.com/caevv/simple-go-prepaid-card/service"
-	"github.com/caevv/simple-go-prepaid-card/env"
+		"github.com/caevv/simple-go-prepaid-card/service"
 )
 
 func main() {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Fatal(r)
-		}
-	}()
-
-	env.Init()
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		log.Fatal(r)
+	// 	}
+	// }()
 
 	service.Start()
 }

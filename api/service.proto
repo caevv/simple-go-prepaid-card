@@ -4,11 +4,22 @@ package prepaidcard;
 
 service PrepaidCard {
     rpc topUp (TopUpRequest) returns (Balance);
+    rpc authorisation (AuthorisationRequest) returns (AuthoriseResponse);
 }
 
 message TopUpRequest {
     string cardID = 1;
     Amount amount = 2;
+}
+
+message AuthorisationRequest {
+    string cardID = 1;
+    Amount amount = 2;
+}
+
+message AuthoriseResponse {
+    Amount amount = 1;
+    bool authorised = 2;
 }
 
 message Amount {

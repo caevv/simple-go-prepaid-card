@@ -1,8 +1,24 @@
 version: '3.2'
 services:
   simple-go-prepaid-card:
-#    image: caevv/simple-go-prepaid-card
+    image: caevv/simple-go-prepaid-card
     environment:
       APP_LOG_LEVEL: "DEBUG"
     ports:
-    - 8100:8080
+    - 8110:8080
+    depends_on:
+    - card-db
+
+  card-db:
+    image: postgres:10.2
+    command: postgres -c log_statement=all
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
+    volumes:
+    - card-db-volume:/docker-entrypoint-initdb.d
+    ports:
+    - 5462:5432
+volumes:
+  card-db-volume:
