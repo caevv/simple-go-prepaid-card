@@ -10,15 +10,15 @@ import (
 )
 
 type Router struct {
-	repository *repository.Repository
+	repository repository.CardRepository
 }
 
-func New(r *repository.Repository) api.PrepaidCardServer {
+func New(r repository.CardRepository) api.PrepaidCardServer {
 	return &Router{repository: r}
 }
 
 func (router Router) TopUp(ctx context.Context, r *api.TopUpRequest) (*api.Balance, error) {
-	card, err := router.repository.TopUp(r.CardID, r.Amount.Value)
+	card, err := router.repository.TopUp(ctx, r.CardID, r.Amount.Value)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not top-up account")
 	}

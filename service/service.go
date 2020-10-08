@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 
 	"github.com/caevv/simple-go-prepaid-card/data"
 	"gorm.io/driver/postgres"
@@ -19,12 +18,13 @@ import (
 )
 
 func Start() {
-	// TODO: add a proper await connection with database/sql
-	time.Sleep(3 * time.Second)
-
 	db, err := gorm.Open(postgres.Open(env.Settings.DBAddress), &gorm.Config{})
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "failed to open connection"))
+	}
+
+	if err := applySchemaMigration(db); err != nil {
+		log.Fatal(errors.Wrap(err, "failed to apply schema migration"))
 	}
 
 	r, err := repository.New(db)
@@ -38,12 +38,7 @@ func Start() {
 func startService(router api.PrepaidCardServer) {
 	log.Print("service started")
 
-	if err := applySchemaMigration(); err != nil {
-		log.Fatal(errors.Wrap(err, "failed to apply schema migration"))
-	}
-
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", env.Settings.GRPCPort))
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,19 +48,13 @@ func startService(router api.PrepaidCardServer) {
 	api.RegisterPrepaidCardServer(grpcServer, router)
 
 	err = grpcServer.Serve(lis)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func applySchemaMigration() error {
-	db, err := gorm.Open(postgres.Open(env.Settings.DBAddress), &gorm.Config{})
-	if err != nil {
-		return errors.Wrap(err, "failed to open connection")
-	}
-
-	err = db.AutoMigrate(&data.Card{})
+func applySchemaMigration(db *gorm.DB) error {
+	err := db.AutoMigrate(&data.Card{})
 	if err != nil {
 		return errors.Wrap(err, "failed auto migrate")
 	}
