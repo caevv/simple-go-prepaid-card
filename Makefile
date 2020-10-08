@@ -7,12 +7,12 @@ all: deps gen lint build upd test down
 ci: all
 
 .PHONY: deps
-deps: 
-	dep ensure -v
+deps:
+	go mod tidy
 
 .PHONY: test
 test:
-	@go get -u github.com/DATA-DOG/godog/cmd/godog
+	@go get -u github.com/cucumber/godog/cmd/godog
 	(cd system_test && exec godog --strict;)
 
 .PHONY: gen

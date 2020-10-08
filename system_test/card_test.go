@@ -1,18 +1,23 @@
 package system
 
 import (
-	"github.com/DATA-DOG/godog"
-	"github.com/caevv/simple-go-prepaid-card/data"
+	"context"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"testing"
+
 	"github.com/caevv/simple-go-prepaid-card/api"
-	"github.com/smartystreets/assertions"
+	"github.com/caevv/simple-go-prepaid-card/data"
+	"github.com/cucumber/godog"
+	"github.com/cucumber/godog/colors"
 	"github.com/pkg/errors"
+	"github.com/smartystreets/assertions"
 	"google.golang.org/grpc"
 
-	"strconv"
-	"context"
 	"github.com/jinzhu/gorm"
-	"log"
-	"fmt"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
@@ -24,27 +29,66 @@ var (
 	db         *gorm.DB
 )
 
+var opts = godog.Options{
+	Output: colors.Colored(os.Stdout),
+	Format: "progress", // can define default values
+}
+
 func init() {
-	apiConn, err := grpc.Dial("localhost:8110", grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
+	godog.BindFlags("godog.", flag.CommandLine, &opts)
+}
+
+func TestMain(m *testing.M) {
+	flag.Parse()
+	opts.Paths = flag.Args()
+
+	// godog v0.10.0 (latest)
+	status := godog.TestSuite{
+		Name:                 "godogs",
+		TestSuiteInitializer: InitializeTestSuite,
+		ScenarioInitializer:  InitializeScenario,
+		Options:              &opts,
+	}.Run()
+
+	if st := m.Run(); st > status {
+		status = st
 	}
+	os.Exit(status)
+}
 
-	svc = api.NewPrepaidCardClient(apiConn)
+func InitializeTestSuite(ctx *godog.TestSuiteContext) {
+	ctx.BeforeSuite(func() {
+		apiConn, err := grpc.Dial("localhost:8110", grpc.WithInsecure())
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	db, err = gorm.Open("postgres", fmt.Sprintf(
-		"postgres://%v:%v@%v:%v/%v?sslmode=%s",
-		"postgres",
-		"postgres",
-		"localhost",
-		"5462",
-		"postgres",
-		"disable",
-	))
+		svc = api.NewPrepaidCardClient(apiConn)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+		db, err = gorm.Open("postgres", fmt.Sprintf(
+			"postgres://%v:%v@%v:%v/%v?sslmode=%s",
+			"postgres",
+			"postgres",
+			"localhost",
+			"5462",
+			"postgres",
+			"disable",
+		))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
+}
+
+func InitializeScenario(ctx *godog.ScenarioContext) {
+	ctx.BeforeScenario(func(*godog.Scenario) {
+		db.DB().Exec("TRUNCATE cards CASCADE")
+	})
+
+	ctx.Step(`^I have a card "([^"]*)" with balance of "([^"]*)"$`, iHaveACardWithBalanceOf)
+	ctx.Step(`^I top-up for an amount of "([^"]*)"$`, iTopupForAnAmountOf)
+	ctx.Step(`^I should have a balance of "([^"]*)"$`, iShouldHaveABalanceOf)
 }
 
 func iHaveACardWithBalanceOf(cardID, balanceAmount string) error {
@@ -89,16 +133,4 @@ func iShouldHaveABalanceOf(balance string) error {
 	}
 
 	return nil
-}
-
-func FeatureContext(s *godog.Suite) {
-	s.Step(`^I have a card "([^"]*)" with balance of "([^"]*)"$`, iHaveACardWithBalanceOf)
-	s.Step(`^I top-up for an amount of "([^"]*)"$`, iTopupForAnAmountOf)
-	s.Step(`^I should have a balance of "([^"]*)"$`, iShouldHaveABalanceOf)
-
-	s.BeforeScenario(cleanDB)
-}
-
-func cleanDB(i interface{}) {
-	db.DB().Exec("TRUNCATE cards CASCADE")
 }
