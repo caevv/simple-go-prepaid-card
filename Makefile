@@ -36,22 +36,5 @@ down:
 
 .PHONY: lint
 lint:
-	@go get -u github.com/alecthomas/gometalinter
-	@gometalinter --vendor --install --force
-	gometalinter ./... --concurrency=1 --vendor --skip=vendor --exclude=\.*mock\.*\.go --exclude=\.*test\.*\.go --exclude=vendor\.* --cyclo-over=15 --deadline=10m --disable-all \
-	--enable=golint \
-	--enable=errcheck \
-	--enable=vet \
-	--enable=deadcode \
-	--enable=gocyclo \
-	--enable=varcheck \
-	--enable=structcheck \
-	--enable=vetshadow \
-	--enable=ineffassign \
-	--enable=interfacer \
-	--enable=unconvert \
-	--enable=goconst \
-	--enable=gosimple \
-	--enable=staticcheck \
-	--enable=gosec \
-	--exclude="\bexported .* should have comment .*or be unexported\b"
+	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31.0
+	golangci-lint run

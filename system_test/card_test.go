@@ -83,7 +83,9 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.BeforeScenario(func(*godog.Scenario) {
-		db.DB().Exec("TRUNCATE cards CASCADE")
+		if _, err := db.DB().Exec("TRUNCATE cards CASCADE"); err != nil {
+			log.Fatal(err)
+		}
 	})
 
 	ctx.Step(`^I have a card "([^"]*)" with balance of "([^"]*)"$`, iHaveACardWithBalanceOf)
