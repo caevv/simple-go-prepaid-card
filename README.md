@@ -1,7 +1,8 @@
 # simple-go-prepaid-card
 
+Run `make all` to install dependencies, build, run and test.
+
 ## TODO
 
 - Use money library.
-- Change db to save as INT instead of float.
-- run `make all` to install dependencies, build, run and test.
+- Authorisation endpoint
