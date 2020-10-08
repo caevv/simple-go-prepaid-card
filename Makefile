@@ -36,5 +36,4 @@ down:
 
 .PHONY: lint
 lint:
-	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31.0
 	golangci-lint run
