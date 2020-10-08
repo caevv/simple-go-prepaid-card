@@ -12,5 +12,6 @@ func main() {
 			log.Printf("%s: %s", r, string(debug.Stack()))
 		}
 	}()
+
 	service.Start()
 }
