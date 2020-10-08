@@ -2,26 +2,36 @@ package service
 
 import (
 	"fmt"
-	"google.golang.org/grpc"
-	"net"
-	"github.com/caevv/simple-go-prepaid-card/env"
-	"github.com/caevv/simple-go-prepaid-card/router"
-	"github.com/caevv/simple-go-prepaid-card/api"
 	"log"
-	"github.com/jinzhu/gorm"
+	"net"
+	"time"
 
-	"github.com/mattes/migrate"
 	"github.com/caevv/simple-go-prepaid-card/data"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	_ "github.com/mattes/migrate/database/postgres"
-	_ "github.com/mattes/migrate/source/file"
+	"gorm.io/driver/postgres"
+
+	"github.com/caevv/simple-go-prepaid-card/api"
+	"github.com/caevv/simple-go-prepaid-card/env"
+	"github.com/caevv/simple-go-prepaid-card/repository"
+	"github.com/caevv/simple-go-prepaid-card/router"
+	"github.com/pkg/errors"
+	"google.golang.org/grpc"
+	"gorm.io/gorm"
 )
 
 func Start() {
-	r, err := data.New()
+	// TODO: add a proper await connection with database/sql
+	time.Sleep(3 * time.Second)
+
+	db, err := gorm.Open(postgres.Open(env.Settings.DBAddress), &gorm.Config{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Wrap(err, "failed to open connection"))
 	}
+
+	r, err := repository.New(db)
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "failed to create new repository"))
+	}
+
 	startService(router.New(r))
 }
 
@@ -29,7 +39,7 @@ func startService(router api.PrepaidCardServer) {
 	log.Print("service started")
 
 	if err := applySchemaMigration(); err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Wrap(err, "failed to apply schema migration"))
 	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", env.Settings.GRPCPort))
@@ -50,33 +60,15 @@ func startService(router api.PrepaidCardServer) {
 }
 
 func applySchemaMigration() error {
-	db, err := gorm.Open("postgres", env.Settings.DBAddress)
+	db, err := gorm.Open(postgres.Open(env.Settings.DBAddress), &gorm.Config{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to open connection")
 	}
 
-	err = db.Close()
+	err = db.AutoMigrate(&data.Card{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed auto migrate")
 	}
 
-	m, err := migrate.New(
-		"file://data/migrations",
-		env.Settings.DBAddress,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	defer m.Close() // nolint
-
-	if err := m.Up(); err != nil {
-		if err != migrate.ErrNoChange {
-			return err
-		}
-	}
-	_, _, err = m.Version()
-
-	return err
+	return nil
 }

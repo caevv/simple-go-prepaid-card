@@ -88,11 +88,11 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 
 	ctx.Step(`^I have a card "([^"]*)" with balance of "([^"]*)"$`, iHaveACardWithBalanceOf)
 	ctx.Step(`^I top-up for an amount of "([^"]*)"$`, iTopupForAnAmountOf)
-	ctx.Step(`^I should have a balance of "([^"]*)"$`, iShouldHaveABalanceOf)
+	ctx.Step(`^my card "([^"]*)" should have a balance of "([^"]*)"$`, myCardShouldHaveABalanceOf)
 }
 
 func iHaveACardWithBalanceOf(cardID, balanceAmount string) error {
-	value, err := strconv.ParseFloat(balanceAmount, 32)
+	value, err := strconv.ParseInt(balanceAmount, 10, 64)
 	if err != nil {
 		return errors.Wrap(err, "failed to convert balance")
 	}
@@ -106,14 +106,14 @@ func iHaveACardWithBalanceOf(cardID, balanceAmount string) error {
 }
 
 func iTopupForAnAmountOf(amount string) error {
-	value, err := strconv.ParseFloat(amount, 32)
+	value, err := strconv.ParseInt(amount, 10, 64)
 	if err != nil {
 		return errors.Wrap(err, "failed to convert balance")
 	}
 
 	newBalance, err = svc.TopUp(
 		context.Background(),
-		&api.TopUpRequest{CardID: card.ID, Amount: &api.Amount{Value: float32(value)}},
+		&api.TopUpRequest{CardID: card.ID, Amount: &api.Amount{Value: value}},
 	)
 	if err != nil {
 		return err
@@ -122,13 +122,23 @@ func iTopupForAnAmountOf(amount string) error {
 	return nil
 }
 
-func iShouldHaveABalanceOf(balance string) error {
-	value, err := strconv.ParseFloat(balance, 32)
+func myCardShouldHaveABalanceOf(cardId string, balance string) error {
+	value, err := strconv.ParseInt(balance, 10, 64)
 	if err != nil {
 		return errors.Wrap(err, "failed to convert balance")
 	}
 
-	if ok, message := assertions.So(newBalance.Amount, assertions.ShouldEqual, float32(value)); !ok {
+	if ok, message := assertions.So(newBalance.Amount, assertions.ShouldEqual, value); !ok {
+		return errors.New(message)
+	}
+
+	var card data.Card
+	err = db.First(&card, cardId).Error
+	if err != nil {
+		return err
+	}
+
+	if ok, message := assertions.So(card.Amount, assertions.ShouldEqual, value); !ok {
 		return errors.New(message)
 	}
 

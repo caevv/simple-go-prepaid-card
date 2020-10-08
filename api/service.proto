@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "api";
+option go_package = ".;api";
 package prepaidcard;
 
 service PrepaidCard {
@@ -23,9 +23,9 @@ message AuthoriseResponse {
 }
 
 message Amount {
-    float value = 1;
+    int64 value = 1;
 }
 
 message Balance {
-    float amount = 1;
+    int64 amount = 1;
 }

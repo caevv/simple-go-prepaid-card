@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 
 .PHONY: all
-all: deps gen lint build upd test down
+all: deps gen lint build upd system_test down
 
 .PHONY: ci
 ci: all
@@ -10,10 +10,9 @@ ci: all
 deps:
 	go mod tidy
 
-.PHONY: test
-test:
-	@go get -u github.com/cucumber/godog/cmd/godog
-	(cd system_test && exec godog --strict;)
+.PHONY: system_test
+system_test:
+	go test ./system_test/. -v --godog.format=pretty
 
 .PHONY: gen
 gen:
